@@ -49,7 +49,14 @@ public class EmployeesController : ControllerBase
     [HttpPost]
     public async Task AddVacation(AddVacationDto dto) {
         var employee = await _db.Employees
+            .Where(e => e.Name + " " + e.Surname == dto.NameSurname)
             .SingleOrDefaultAsync();
+        if(employee == null || dto.End < dto.Start) 
+        {
+            Response.StatusCode = 400;
+            return; 
+        }
+
         employee.Vacations.Add(new VacationEntity { Start = dto.Start, End = dto.End });
         await _db.SaveChangesAsync();
     }
@@ -59,10 +66,15 @@ public class EmployeesController : ControllerBase
         var employee = await _db.Employees
             .Include(x => x.Vacations)
             .SingleOrDefaultAsync(e => e.Id == employeeId);
-        var result = employee.Vacations.Aggregate(TimeSpan.FromDays(0), (acc, curr) => acc += curr.End - curr.Start);
+        if (employee == null) 
+        {
+            Response.StatusCode = 404;
+            return null;
+        }
+        var result = employee.Vacations.Aggregate(0, (acc, curr) => acc += (curr.End - curr.Start).Days);
         return new EmployeeVacationDto {
             NameSurname = $"{employee.Name} {employee.Surname}",
-            TotalVacationDays = 0
+            TotalVacationDays = result
         };
     }
 }

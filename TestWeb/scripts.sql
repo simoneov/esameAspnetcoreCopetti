@@ -1,6 +1,7 @@
---create database VacationManagement;
+create database VacationManagement;
 
---use database VacationManagement;
+use VacationManagement;
+go;
 
 create table Employees (
     Id int not null primary key identity,
@@ -19,6 +20,6 @@ insert into Employees (Name, Surname) values
 create table Vacations (
     Id int not null primary key identity,
     Start datetime not null,
-    End datetime not null,
+    EndDate datetime not null,
     EmployeeId int not null references Employees (Id)
 );
